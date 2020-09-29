@@ -112,7 +112,7 @@ class ImageManager extends Manager
         $dir = trim($parts['dirname'], '/');
 
         $path = array();
-        //$path[] = '/';
+        $path[] = rtrim($host, '/');
 
         if ($prefix = config('thumbnail.write_path')) {
             $path[] = trim($prefix, '/');
