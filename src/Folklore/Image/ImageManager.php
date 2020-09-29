@@ -1,15 +1,16 @@
 <?php namespace Folklore\Image;
 
-use Folklore\Image\Exception\Exception;
-use Folklore\Image\Exception\FileMissingException;
-use Folklore\Image\Exception\ParseException;
-use Folklore\Image\Exception\FormatException;
-
-use Illuminate\Support\Manager;
-
-use Imagine\Image\ImageInterface;
 use Imagine\Image\Box;
 use Imagine\Image\Point;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Manager;
+
+
+use Folklore\Image\Exception\Exception;
+use Folklore\Image\Exception\ParseException;
+use Folklore\Image\Exception\FormatException;
+use Folklore\Image\Exception\FileMissingException;
+use Imagine\Image\ImageInterface;
 
 class ImageManager extends Manager
 {
@@ -20,8 +21,8 @@ class ImageManager extends Manager
      * @var array
      */
     protected $defaultOptions = array(
-        'width' => null,
-        'height' => null,
+        'width' => 80,
+        'height' => 80,
         'quality' => 80,
         'filters' => array()
     );
@@ -44,7 +45,6 @@ class ImageManager extends Manager
      */
     public function url($src, $width = null, $height = null, $options = array())
     {
-
         // Don't allow empty strings
         if (empty($src)) {
             return;
@@ -60,9 +60,8 @@ class ImageManager extends Manager
             $height = null;
         }
         
-        $config = $this->app['config'];
-        $url_parameter = isset($options['url_parameter']) ? $options['url_parameter']:$config['image.url_parameter'];
-        $url_parameter_separator = isset($options['url_parameter_separator']) ? $options['url_parameter_separator']:$config['image.url_parameter_separator'];
+        $url_parameter = isset($options['url_parameter']) ? $options['url_parameter']:config('thumbnail.url_parameter');
+        $url_parameter_separator = isset($options['url_parameter_separator']) ? $options['url_parameter_separator']:config('thumbnail.url_parameter_separator');
         unset($options['url_parameter'],$options['url_parameter_separator']);
 
         //Get size
@@ -109,13 +108,13 @@ class ImageManager extends Manager
 
         // Break the path apart and put back together again
         $parts = pathinfo($src);
-        $host = isset($options['host']) ? $options['host']:$this->app['config']['image.host'];
+        $host = isset($options['host']) ? $options['host']: config('thumbnail.host');
         $dir = trim($parts['dirname'], '/');
 
         $path = array();
-        $path[] = rtrim($host, '/');
+        //$path[] = '/';
 
-        if ($prefix = $this->app['config']->get('image.write_path')) {
+        if ($prefix = config('thumbnail.write_path')) {
             $path[] = trim($prefix, '/');
         }
 
@@ -130,6 +129,8 @@ class ImageManager extends Manager
         }
         $path[] = implode('.', $filename);
 
+        //$this->serve(implode('/', $path));
+
         return implode('/', $path);
 
     }
@@ -143,9 +144,6 @@ class ImageManager extends Manager
      */
     public function make($path, $options = array())
     {
-        //Get app config
-        $config = $this->app['config'];
-
         // See if the referenced file exists and is an image
         if (!($path = $this->getRealPath($path))) {
             throw new FileMissingException('Image file missing');
@@ -169,8 +167,8 @@ class ImageManager extends Manager
         }
 
         // Increase memory limit, cause some images require a lot to resize
-        if ($config->get('image.memory_limit')) {
-            ini_set('memory_limit', $config->get('image.memory_limit'));
+        if (config('thumbnail.memory_limit') ) {
+            ini_set('memory_limit', config('thumbnail.writmemory_limite_path') );
         }
 
         //Open the image
@@ -225,17 +223,19 @@ class ImageManager extends Manager
      */
     public function serve($path, $config = array())
     {
+       // dd($this);
+        //dd($path);
         //Use user supplied quality or the config value
-        $quality = array_get($config, 'quality', $this->app['config']['image.quality']);
+        $quality = Arr::get($config, 'quality',  config('thumbnail.quality'));
         //if nothing works fallback to the hardcoded value
         $quality = $quality ?: $this->defaultOptions['quality'];
 
         //Merge config with defaults
         $config = array_merge(array(
             'quality' => $quality,
-            'custom_filters_only' => $this->app['config']['image.serve_custom_filters_only'],
-            'write_image' => $this->app['config']['image.write_image'],
-            'write_path' => $this->app['config']['image.write_path']
+            'custom_filters_only' => config('thumbnail.serve_custom_filters_only'),
+            'write_image' => config('thumbnail.write_image'),
+            'write_path' => config('thumbnail.write_path')
         ), $config);
 
         $serve = new ImageServe($this, $config);
@@ -254,12 +254,12 @@ class ImageManager extends Manager
     {
         //Merge config with defaults
         $config = array_merge(array(
-            'tmp_path' => $this->app['config']['image.proxy_tmp_path'],
-            'filesystem' => $this->app['config']['image.proxy_filesystem'],
-            'cache' => $this->app['config']['image.proxy_cache'],
-            'cache_expiration' => $this->app['config']['image.proxy_cache_expiration'],
-            'write_image' => $this->app['config']['image.proxy_write_image'],
-            'cache_filesystem' => $this->app['config']['image.proxy_cache_filesystem']
+            'tmp_path' => config('thumbnail.proxy_tmp_path'),
+            'filesystem' => config('thumbnail.proxy_filesystem'),
+            'cache' => config('thumbnail.proxy_cache'),
+            'cache_expiration' => config('thumbnail.proxy_cache_expiration'),
+            'write_image' => config('thumbnail.proxy_write_image'),
+            'cache_filesystem' => config('thumbnail.proxy_cache_filesystem')
         ), $config);
         
         $serve = new ImageProxy($this, $config);
@@ -420,13 +420,12 @@ class ImageManager extends Manager
     public function pattern($parameter = null, $pattern = null)
     {
         //Replace the {options} with the options regular expression
-        $config = $this->app['config'];
-        $parameter = !isset($parameter) ? $config['image.url_parameter']:$parameter;
+        $parameter = !isset($parameter) ? config('thumbnail.url_parameter'):$parameter;
         $parameter = preg_replace('/\\\{\s*options\s*\\\}/', '([0-9a-zA-Z\(\),\-/._]+?)?', preg_quote($parameter));
         
         if(!$pattern)
         {
-            $pattern = $config->get('image.pattern', '^(.*){parameters}\.(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$');
+            $pattern = config('thumbnail.pattern');
         }
         $pattern = preg_replace('/\{\s*parameters\s*\}/', $parameter, $pattern);
 
@@ -446,7 +445,7 @@ class ImageManager extends Manager
         $config = array_merge(array(
             'custom_filters_only' => false,
             'url_parameter' => null,
-            'url_parameter_separator' => $this->app['config']['image.url_parameter_separator']
+            'url_parameter_separator' => config('thumbnail.url_parameter_separator')
         ), $config);
 
         $parsedOptions = array();
@@ -478,7 +477,7 @@ class ImageManager extends Manager
         //Default config
         $config = array_merge(array(
             'custom_filters_only' => false,
-            'url_parameter_separator' => $this->app['config']['image.url_parameter_separator']
+            'url_parameter_separator' => config('thumbnail.url_parameter_separator')
         ), $config);
 
         $options = array();
@@ -562,9 +561,9 @@ class ImageManager extends Manager
         }
         
         //Get directories
-        $dirs = $this->app['config']['image.src_dirs'];
-        if ($this->app['config']['image.write_path']) {
-            $dirs[] = $this->app['config']['image.write_path'];
+        $dirs =  config('thumbnail.src_dirs');
+        if (config('thumbnail.write_path')) {
+            $dirs[] = config('thumbnail.write_path');
         }
 
         // Loop through all the directories files may be uploaded to
@@ -578,10 +577,13 @@ class ImageManager extends Manager
 
             // Look for the image in the directory
             $src = realpath($dir.'/'.ltrim($path, '/'));
+
             if (is_file($src)) {
                 return $src;
             }
         }
+
+
 
         // None found
         return false;
@@ -614,8 +616,8 @@ class ImageManager extends Manager
         $parts = pathinfo($path);
         $dirs = [$parts['dirname']];
         $dirs = [$parts['dirname']];
-        if ($this->app['config']['image.write_path']) {
-            $dirs[] = $this->app['config']['image.write_path'];
+        if (config('thumbnail.write_path')) {
+            $dirs[] = config('thumbnail.write_path');
         }
         foreach ($dirs as $directory) {
             $files = scandir($directory);
@@ -837,7 +839,7 @@ class ImageManager extends Manager
      */
     public function getDefaultDriver()
     {
-        return $this->app['config']['image.driver'];
+        return config('thumbnail.driver');
     }
 
     /**
@@ -848,6 +850,6 @@ class ImageManager extends Manager
      */
     public function setDefaultDriver($name)
     {
-        $this->app['config']['image.driver'] = $name;
+        config('thumbnail.driver', $name);
     }
 }

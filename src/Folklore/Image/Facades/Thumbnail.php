@@ -2,12 +2,12 @@
 
 use Illuminate\Support\Facades\Facade;
 
-class Image extends Facade
+class Thumbnail extends Facade
 {
 
 	protected static function getFacadeAccessor()
 	{
-		return 'image';
+		return 'thumbnail';
 	}
 
 }
