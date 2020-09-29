@@ -20,15 +20,15 @@ class ImageServiceProvider extends ServiceProvider
     public function boot()
     {
         // Config file path
-        $configFile = __DIR__ . '/../../resources/config/image.php';
+        $configFile = __DIR__ . '/../../resources/config/thumbnail.php';
         $publicFile = __DIR__ . '/../../resources/assets/';
 
         // Merge files
-        $this->mergeConfigFrom($configFile, 'image');
+        $this->mergeConfigFrom($configFile, 'thumbnail');
 
         // Publish
         $this->publishes([
-            $configFile => config_path('image.php')
+            $configFile => config_path('thumbnail.php')
         ], 'config');
         
         $this->publishes([
@@ -37,32 +37,35 @@ class ImageServiceProvider extends ServiceProvider
 
         $app = $this->app;
         $router = $app['router'];
-        $config = $app['config'];
+
         
-        $pattern = $app['image']->pattern();
-        $proxyPattern = $config->get('image.proxy_route_pattern');
+        $pattern = $app['thumbnail']->pattern();
+        $proxyPattern = config('thumbnail.proxy_route_pattern');
+
         $router->pattern('image_pattern', $pattern);
         $router->pattern('image_proxy_pattern', $proxyPattern ? $proxyPattern:$pattern);
 
         //Serve image
-        $serve = config('image.serve');
+        $serve = config('thumbnail.serve') ;
+
         if ($serve) {
             // Create a route that match pattern
-            $serveRoute = $config->get('image.serve_route', '{image_pattern}');
+            $serveRoute = config('thumbnail.serve_route', '{image_pattern}');
+
             $router->get($serveRoute, array(
-                'as' => 'image.serve',
-                'domain' => $config->get('image.domain', null),
+                'as' => 'thumbnail.serve',
+                'domain' => config('thumbnail.domain'),
                 'uses' => 'Folklore\Image\ImageController@serve'
             ));
         }
         
         //Proxy
-        $proxy = $this->app['config']['image.proxy'];
+        $proxy = config('thumbnail.proxy');
         if ($proxy) {
-            $serveRoute = $config->get('image.proxy_route', '{image_proxy_pattern}');
+            $serveRoute = config('thumbnail.proxy_route');
             $router->get($serveRoute, array(
-                'as' => 'image.proxy',
-                'domain' => $config->get('image.proxy_domain'),
+                'as' => 'thumbnail.proxy',
+                'domain' => config('thumbnail.proxy_domain'),
                 'uses' => 'Folklore\Image\ImageController@proxy'
             ));
         }
@@ -75,7 +78,7 @@ class ImageServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('image', function ($app) {
+        $this->app->singleton('thumbnail', function ($app) {
             return new ImageManager($app);
         });
     }

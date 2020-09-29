@@ -29,7 +29,7 @@ class ImageProxy extends ImageServe
     public function response($path)
     {
         // Increase memory limit, cause some images require a lot to resize
-        if (config('image.memory_limit')) {
+        if (config('thumbnail.memory_limit')) {
             ini_set('memory_limit', config('image.memory_limit'));
         }
 

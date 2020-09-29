@@ -48,7 +48,7 @@ return array(
     | to generate the right URL.
     |
     */
-    'host' => '',
+    'host' => env('APP_URL', 'mysql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -77,7 +77,7 @@ return array(
     | Example: /uploads/photo-image(300x300-grayscale).jpg
     |
     */
-    'url_parameter' => '-image({options})',
+    'url_parameter' => '-image-{options}',
 
     /*
     |--------------------------------------------------------------------------
