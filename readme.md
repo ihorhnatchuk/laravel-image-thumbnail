@@ -15,22 +15,22 @@ To create a 300x300 version of this image in black and white, you use the URL:
 
     /uploads/photo-image(300x300-crop-grayscale).jpg
     
-To help you generate the URL to an image, you can use the `Image::url()` method
+To help you generate the URL to an image, you can use the `Thumbnail::url()` method
 
 ```php
-Image::url('/uploads/photo.jpg',300,300,array('crop','grayscale'));
+Thumbnail::url('/uploads/photo.jpg',300,300,array('crop','grayscale'));
 ```
 
 or
 
 ```html
-<img src="<?=Image::url('/uploads/photo.jpg',300,300,array('crop','grayscale'))?>" />
+<img src="<?=Thumbnail::url('/uploads/photo.jpg',300,300,array('crop','grayscale'))?>" />
 ```
 
-Alternatively, you can programmatically manipulate images using the `Image::make()` method. It supports all the same options as the `Image::url()` method.
+Alternatively, you can programmatically manipulate images using the `Thumbnail::make()` method. It supports all the same options as the `Thumbnail::url()` method.
 
 ```php
-Image::make('/uploads/photo.jpg',array(
+Thumbnail::make('/uploads/photo.jpg',array(
 	'width' => 300,
 	'height' => 300,
 	'grayscale' => true
@@ -40,7 +40,7 @@ Image::make('/uploads/photo.jpg',array(
 or use directly the Imagine library
 
 ```php
-$thumbnail = Image::open('/uploads/photo.jpg')
+$thumbnail = Thumbnail::open('/uploads/photo.jpg')
 			->thumbnail(new Imagine\Image\Box(300,300));
 
 $thumbnail->effects()->grayscale();
@@ -71,12 +71,13 @@ This package also provides some common filters ready to use ([more on this](http
  5.0.x    | 0.2.x
  5.1.x    | 0.3.x
  5.2.x    | 0.3.x
+ 8.2.x    | 0.3.x
 
 ## Installation
 
 #### Dependencies:
 
-* [Laravel 5.x](https://github.com/laravel/laravel)
+* [Laravel 8.x](https://github.com/laravel/laravel)
 * [Imagine 0.6.x](https://github.com/avalanche123/Imagine)
 
 #### Server Requirements:
