@@ -168,7 +168,7 @@ class ImageManager extends Manager
 
         // Increase memory limit, cause some images require a lot to resize
         if (config('thumbnail.memory_limit') ) {
-            ini_set('memory_limit', config('thumbnail.writmemory_limite_path') );
+            ini_set('memory_limit', config('thumbnail.memory_limit') );
         }
 
         //Open the image
@@ -223,8 +223,6 @@ class ImageManager extends Manager
      */
     public function serve($path, $config = array())
     {
-       // dd($this);
-        //dd($path);
         //Use user supplied quality or the config value
         $quality = Arr::get($config, 'quality',  config('thumbnail.quality'));
         //if nothing works fallback to the hardcoded value

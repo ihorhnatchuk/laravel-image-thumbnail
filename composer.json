@@ -22,14 +22,8 @@
     },
     "autoload": {
         "psr-0": {
-            "Folklore\\Image\\": "src/",
-            "Folklore\\Image\\Tests": "tests/"
+            "Folklore\\Image\\": "src/"
         }
-    },
-    "autoload-dev": {
-        "classmap": [
-            "tests/"
-        ]
     },
     "extra": {
         "laravel": {
