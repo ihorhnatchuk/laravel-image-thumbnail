@@ -13,7 +13,7 @@
         "php": ">=7.2.0",
         "illuminate/support": "^6.18|^7.0|^8.0",
         "guzzlehttp/guzzle": "^7.0",
-        "imagine/imagine": "0.6.*"
+        "imagine/imagine": "^1.0"
     },
     "require-dev": {
         "fzaninotto/faker": "^1.9",
